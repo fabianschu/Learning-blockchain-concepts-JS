@@ -99,8 +99,6 @@ class Blockchain{
 
         let block = new Block(Date.now(), [coinbaseTx, ...this.pendingTransactions]);
 
-        console.log(block);
-
         block.mineBlock(this.difficulty);
 
         console.log("Block successfully mined");
@@ -191,6 +189,8 @@ console.log('my balance is', fabiCoin.getBalanceOfAddress(myWalletAddress));
 
 console.log(fabiCoin.pendingTransactions);
 
+fabiCoin.minePendingTransactions(myWalletAddress);
+console.log('my balance is', fabiCoin.getBalanceOfAddress(myWalletAddress));
 /* --------- Keys ---------- */
 // public: 044ab0e5e2df6ff08e541cf6b33eb0d3e9d611dc0f2428246037074b8cefd75d5a7935c420a498a38e54e5725d7d3fe1e6d8e2587acca0b54a40dcbf4e1ac6dcdd
 // private: 5b4dc85997a92fb19df986dce16004d7a82dbb12918f32d1a24664da7e10bfde
