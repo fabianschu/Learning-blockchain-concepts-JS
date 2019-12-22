@@ -48,9 +48,9 @@ class Block {
         this.timestamp = timestamp;
         this.previousHash = previousHash;
         this.hash = this.calculateHash();
-        this.merkleRoot = ""
-        this.nonce = 0;
         this.transactions = transactions;
+        this.merkleRoot = this.createMerkleRoot(transactions);
+        this.nonce = 0;
     }
 
     calculateHash(){
@@ -62,6 +62,7 @@ class Block {
             this.nonce++;
             this.hash = this.calculateHash();
         }
+        this.createMerkleRoot(this.transactions);
         console.log("block mined: " + this.hash);
     }
 
@@ -75,6 +76,29 @@ class Block {
         }
         return true;
     }
+
+    createMerkleRoot = (transactions) => {
+        if(transactions.length != 1) {
+            let buffer = [];
+            if(transactions.length % 2 != 0) {
+                console.log("here :",transactions);
+                this.transactions.push(transactions[transactions.length - 1])
+            }
+
+
+            for (let i = 0; i < transactions.length; i += 2) {
+                let left = JSON.stringify(transactions[i]);
+                let right = JSON.stringify(transactions[i + 1]);
+                console.log("sheesh: ", SHA256(left+right).toString());
+                buffer.push(SHA256(left+right).toString());
+            } 
+
+            return this.createMerkleRoot(buffer);
+
+        } else {
+            return transactions[0];
+        }
+    }
 }
 
 class Blockchain{
@@ -86,7 +110,7 @@ class Blockchain{
     }
 
     createGenesisBlock(){
-        return new Block("15/11/2019", "Genesis block", "0");
+        return new Block("15/11/2019", ["GENESIS"], "0");
     }
 
     getLatestBlock(){
@@ -98,7 +122,7 @@ class Blockchain{
         //create a coinbase transaction and add it to pending
         let coinbaseTx = new Transaction(null, miningRewardAddress, this.miningReward);
 
-        let block = new Block(Date.now(), [coinbaseTx, ...this.pendingTransactions]);
+        let block = new Block(Date.now(), [coinbaseTx, ...this.pendingTransactions], this.getLatestBlock().hash);
 
         block.mineBlock(this.difficulty);
 
@@ -187,11 +211,16 @@ fabiCoin.addTransaction(tx1);
 fabiCoin.minePendingTransactions(myWalletAddress);
 
 console.log('my balance is', fabiCoin.getBalanceOfAddress(myWalletAddress));
+const tx2 = new Transaction(myWalletAddress, 'other key of recipient', 1);
+tx2.signTransaction(myKey);
+fabiCoin.addTransaction(tx2);
 
 console.log(fabiCoin.pendingTransactions);
 
 fabiCoin.minePendingTransactions(myWalletAddress);
 console.log('my balance is', fabiCoin.getBalanceOfAddress(myWalletAddress));
+
+console.log(fabiCoin.chain);
 /* --------- Keys ---------- */
 // public: 044ab0e5e2df6ff08e541cf6b33eb0d3e9d611dc0f2428246037074b8cefd75d5a7935c420a498a38e54e5725d7d3fe1e6d8e2587acca0b54a40dcbf4e1ac6dcdd
 // private: 5b4dc85997a92fb19df986dce16004d7a82dbb12918f32d1a24664da7e10bfde
